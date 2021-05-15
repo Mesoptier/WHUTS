@@ -1,78 +1,54 @@
 use std::collections::HashSet;
 use std::iter::FromIterator;
 
-const TILE_SIZE: usize = 2;
+use crate::tile::{Tile, Coord};
 
-type Tile = [[bool; TILE_SIZE]; TILE_SIZE];
+mod tile;
+mod rotation_matrices;
 
 fn main() {
-    // Create the base tile
-    let mut tile: Tile = [[false; TILE_SIZE]; TILE_SIZE];
-    tile[0][0] = true;
-    tile[0][1] = true;
-    tile[1][0] = true;
-    let tile = tile;
+    let mut tile: Tile<2> = Tile::new(vec![[0, 0], [0, 1], [1, 0]]);
 
-    // Generate all orientations of the given tile
-    let mut tile_orientations: HashSet<Tile> = HashSet::new();
-    for &fx in &[false, true] {
-        for &fy in &[false, true] {
-            let mut new_tile = tile;
+    let space_size = [3, 3];
 
-            if fx {
-                new_tile.reverse();
-            }
-            if fy {
-                for x in 0..TILE_SIZE {
-                    new_tile[x].reverse();
-                }
-            }
-
-            // print_tile(&new_tile);
-            // println!();
-
-            tile_orientations.insert(new_tile);
-        }
-    }
-
-    let size = (9, 9);
-
-    let mat = WhutsMatrix::new(size, Vec::from_iter(tile_orientations));
+    let mat = WhutsMatrix::new(space_size, tile.rotations());
     let mut solver = dlx::Solver::new(mat.ncols(), mat);
-    let mut solutions = Solutions { size, solved: false };
+    let mut solutions = Solutions { solved: false };
     solver.solve(vec![], &mut solutions);
     if !solutions.solved {
         println!("No solution");
     }
 }
 
-struct WhutsMatrix {
-    size: (usize, usize),
-    tiles: Vec<Tile>,
+struct WhutsMatrix<const N: usize> {
+    size: Coord<N>,
+    tiles: Vec<Tile<N>>,
 
-    x: usize,
-    y: usize,
     t: usize,
+    pos: Coord<N>,
 }
 
-impl WhutsMatrix {
-    fn new(size: (usize, usize), tiles: Vec<Tile>) -> WhutsMatrix {
+impl<const N: usize> WhutsMatrix<N> {
+    fn new(size: Coord<N>, tiles: Vec<Tile<N>>) -> WhutsMatrix<N> {
         WhutsMatrix {
             size,
             tiles,
 
             t: 0,
-            x: 0,
-            y: 0,
+            pos: [0; N],
         }
     }
 
     fn ncols(&self) -> usize {
-        return self.size.0 * self.size.1;
+        let mut ncols = 1;
+        for i in 0..N {
+            ncols *= self.size[i];
+        }
+        ncols
     }
 }
 
-impl Iterator for WhutsMatrix {
+impl<const N: usize> Iterator for WhutsMatrix<N> {
     type Item = dlx::Row;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -80,35 +56,43 @@ impl Iterator for WhutsMatrix {
             return None;
         }
 
-        let (size_x, size_y) = self.size;
-
         // === MAKE ROW
         let mut row = vec![];
-        let tile = self.tiles[self.t];
+        let tile = &self.tiles[self.t];
 
-        // Loop over each cell in the tile box
-        // Compute coordinates in wrapped space ((self.x, self.y) + (dx, dy)) % self.size = (cx, cy)
-        for dx in 0..TILE_SIZE {
-            let cx = (self.x + dx) % size_x;
-            for dy in 0..TILE_SIZE {
-                let cy = (self.y + dy) % size_y;
-
-                if tile[dx][dy] {
-                    let cell_index = self.size.0 * cy + cx;
-                    row.push(cell_index);
-                }
+        for tile_coord in &tile.coords {
+            // cell_coord = (self.pos + tile_coord) % self.size // (element-wise)
+            let mut cell_coord = [0; N];
+            for i in 0..N {
+                cell_coord[i] = (self.pos[i] + tile_coord[i]) % self.size[i];
             }
+
+            // ND coord to 1D index
+            let mut cell_index = 0;
+            for i in 0..N {
+                let mut x = cell_coord[i];
+                for j in 0..i {
+                    x *= self.size[j];
+                }
+                cell_index += x;
+            }
+
+            row.push(cell_index);
         }
 
         // === INCREMENT
-        self.y += 1;
-        if self.y == size_y {
-            self.y = 0;
-            self.x += 1;
-            if self.x == size_x {
-                self.x = 0;
+        for i in 0..=N {
+            if i == N {
                 self.t += 1;
+                break;
             }
+
+            self.pos[i] += 1;
+
+            if self.pos[i] != self.size[i] {
+                break;
+            }
+            self.pos[i] = 0;
         }
 
         return Some(row);
@@ -116,7 +100,6 @@ impl Iterator for WhutsMatrix {
 }
 
 struct Solutions {
-    size: (usize, usize),
     solved: bool,
 }
 
@@ -126,35 +109,11 @@ impl dlx::Solutions for Solutions {
 
         println!("Found a solution!");
 
-        let (size_x, size_y) = self.size;
-        let mut grid = vec![0; size_x * size_y];
-
-        for (id, row) in sol.enumerate() {
-            for cell_index in row {
-                grid[cell_index] = id;
-            }
-        }
-
-        for (cell_index, id) in grid.iter().enumerate() {
-            if cell_index != 0 && cell_index % size_x == 0 {
-                println!();
-            }
-            print!("[{:3}]", id);
+        for row in sol {
+            println!("{:?}", row);
         }
 
         // Stop after finding one solution
         false
-    }
-}
-
-fn print_tile(tile: &Tile) {
-    for x in 0..TILE_SIZE {
-        for y in 0..TILE_SIZE {
-            match tile[x][y] {
-                true => print!("X"),
-                false => print!("."),
-            }
-        }
-        println!();
     }
 }
