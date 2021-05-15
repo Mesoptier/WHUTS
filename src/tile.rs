@@ -1,6 +1,5 @@
 use crate::rotation_matrices::{ROTATION_MATRICES_2D, ROTATION_MATRICES_3D};
-
-pub type Coord<const N: usize> = [usize; N];
+use crate::coord::Coord;
 
 
 #[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
