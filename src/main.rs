@@ -29,7 +29,7 @@ fn main() {
         match find_tiling(rotations) {
             Some((tiling, space_size)) => {
                 println!("FOUND TILING!");
-                println!("Dimensions of the wrapped space (i.e. hypertorus): {:?}", space_size);
+                println!("Dimensions of the smallest wrapping space (i.e. hypertorus): {:?}", space_size);
                 println!("Tiling (each line is a single instance of the unfolding):");
                 for tile in tiling {
                     println!("{:?}", tile);

@@ -16,7 +16,7 @@ Unfolding coords:
 [[0, 0, 0], [1, 0, 0], [1, 0, 1], [1, 1, 1], [1, 1, 2], [2, 1, 2], [2, 1, 3], [2, 2, 3]]
 
 FOUND TILING!
-Dimensions of the wrapped space (i.e. hypertorus): [2, 2, 2]
+Dimensions of the smallest wrapping space (i.e. hypertorus): [2, 2, 2]
 Tiling (each line is a single instance of the unfolding):
 [[0, 0, 0], [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 1, 1]]
 
@@ -25,7 +25,7 @@ Unfolding coords:
 [[0, 1, 3], [0, 2, 3], [1, 0, 0], [1, 0, 1], [1, 1, 1], [1, 1, 2], [1, 1, 3], [2, 1, 2]]
 
 FOUND TILING!
-Dimensions of the wrapped space (i.e. hypertorus): [2, 2, 4]
+Dimensions of the smallest wrapping space (i.e. hypertorus): [2, 2, 4]
 Tiling (each line is a single instance of the unfolding):
 [[0, 0, 0], [0, 1, 0], [0, 1, 1], [1, 0, 2], [1, 0, 3], [1, 1, 0], [1, 1, 1], [1, 1, 2]]
 [[0, 0, 1], [0, 0, 2], [0, 0, 3], [0, 1, 2], [0, 1, 3], [1, 0, 0], [1, 0, 1], [1, 1, 3]]
@@ -35,7 +35,7 @@ Unfolding coords:
 [[0, 0, 1], [1, 0, 1], [1, 1, 0], [1, 1, 1], [1, 1, 2], [2, 1, 2], [2, 2, 2], [2, 2, 3]]
 
 FOUND TILING!
-Dimensions of the wrapped space (i.e. hypertorus): [2, 2, 4]
+Dimensions of the smallest wrapping space (i.e. hypertorus): [2, 2, 4]
 Tiling (each line is a single instance of the unfolding):
 [[0, 0, 0], [0, 0, 1], [0, 0, 2], [0, 1, 2], [1, 0, 1], [1, 1, 1], [1, 1, 2], [1, 1, 3]]
 [[0, 0, 3], [0, 1, 0], [0, 1, 1], [0, 1, 3], [1, 0, 0], [1, 0, 2], [1, 0, 3], [1, 1, 0]]
@@ -45,7 +45,7 @@ Unfolding coords:
 [[0, 3, 2], [1, 0, 1], [1, 1, 1], [1, 2, 0], [1, 2, 1], [1, 2, 2], [1, 3, 2], [2, 2, 2]]
 
 FOUND TILING!
-Dimensions of the wrapped space (i.e. hypertorus): [2, 4, 4]
+Dimensions of the smallest wrapping space (i.e. hypertorus): [2, 4, 4]
 Tiling (each line is a single instance of the unfolding):
 [[0, 0, 0], [0, 1, 0], [1, 0, 0], [1, 1, 0], [1, 1, 1], [1, 1, 2], [1, 2, 1], [1, 3, 1]]
 [[0, 0, 1], [0, 0, 2], [0, 2, 1], [0, 3, 0], [0, 3, 1], [0, 3, 3], [1, 0, 1], [1, 0, 2]]
