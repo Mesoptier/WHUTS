@@ -1,13 +1,10 @@
-use std::collections::HashSet;
-use std::iter::FromIterator;
-
 use crate::tile::{Tile, Coord};
 
 mod tile;
 mod rotation_matrices;
 
 fn main() {
-    let mut tile: Tile<2> = Tile::new(vec![[0, 0], [0, 1], [1, 0]]);
+    let tile: Tile<2> = Tile::new(vec![[0, 0], [0, 1], [1, 0]]);
 
     let space_size = [3, 3];
 
