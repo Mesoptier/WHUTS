@@ -1,36 +1,49 @@
-use crate::tile::{Tile, Coord};
+use crate::tile::{Tile, Coord, normalize_negative_coords};
 
 mod tile;
 mod rotation_matrices;
 
+const N: usize = 3;
+const MAX_SPACE_SIZE: usize = 5;
+
 fn main() {
-    let tile: Tile<3> = Tile::new(vec![
-        [0, 0, 0],
-        [0, 1, 0],
-        [1, 0, 0],
-        [0, 0, 1],
-    ]);
+    let coords = vec![[0, 0, 0], [0, 0, -1], [0, -1, -1], [0, -1, -2], [-1, -1, -2], [1, 0, 0], [1, 0, 1], [1, 1, 1]];
 
-    let space_size = [3, 4, 4];
+    let tile: Tile<N> = Tile::new(normalize_negative_coords(coords));
 
-    let num_cells = space_size.iter().product::<usize>();
-    if num_cells % tile.coords.len() != 0 {
-        eprintln!("No solution possible!");
-        return
-    }
+    println!("{:?}", tile);
 
     // Get and de-dupe rotations
     let mut rotations = tile.rotations();
     rotations.sort();
     rotations.dedup();
 
-    let mat = WhutsMatrix::new(space_size, rotations);
+    for x in 1..MAX_SPACE_SIZE {
+        for y in 1..MAX_SPACE_SIZE {
+            for z in 1..MAX_SPACE_SIZE {
+                let space_size = [x, y, z];
+                if find_tiling(rotations.clone(), space_size) {
+                    println!("Wrapped space size: {:?}", space_size);
+                    return;
+                }
+            }
+        }
+    }
+}
+
+fn find_tiling(tiles: Vec<Tile<N>>, space_size: Coord<N>) -> bool {
+    let num_cells = space_size.iter().product::<usize>();
+    if num_cells % tiles.first().unwrap().coords.len() != 0 {
+        return false;
+    }
+
+    // Solve using DLX
+    let mat = WhutsMatrix::new(space_size, tiles);
     let mut solver = dlx::Solver::new(mat.ncols(), mat);
     let mut solutions = Solutions { solved: false };
     solver.solve(vec![], &mut solutions);
-    if !solutions.solved {
-        println!("No solution");
-    }
+
+    return solutions.solved;
 }
 
 struct WhutsMatrix<const N: usize> {
@@ -53,11 +66,7 @@ impl<const N: usize> WhutsMatrix<N> {
     }
 
     fn ncols(&self) -> usize {
-        let mut ncols = 1;
-        for i in 0..N {
-            ncols *= self.size[i];
-        }
-        ncols
+        self.size.iter().product()
     }
 }
 
@@ -65,50 +74,67 @@ impl<const N: usize> Iterator for WhutsMatrix<N> {
     type Item = dlx::Row;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.t >= self.tiles.len() {
-            return None;
-        }
-
-        // === MAKE ROW
-        let mut row = vec![];
-        let tile = &self.tiles[self.t];
-
-        for tile_coord in &tile.coords {
-            // cell_coord = (self.pos + tile_coord) % self.size // (element-wise)
-            let mut cell_coord = [0; N];
-            for i in 0..N {
-                cell_coord[i] = (self.pos[i] + tile_coord[i]) % self.size[i];
+        loop {
+            if self.t >= self.tiles.len() {
+                return None;
             }
 
-            // ND coord to 1D index
-            let mut cell_index = 0;
-            for i in 0..N {
-                let mut x = cell_coord[i];
-                for j in 0..i {
-                    x *= self.size[j];
+            // === MAKE ROW
+            let mut row = vec![];
+            let tile = &self.tiles[self.t];
+
+            let mut is_valid = true;
+
+            for tile_coord in &tile.coords {
+                // cell_coord = (self.pos + tile_coord) % self.size // (element-wise)
+                let mut cell_coord = [0; N];
+                for i in 0..N {
+                    cell_coord[i] = (self.pos[i] + tile_coord[i]) % self.size[i];
                 }
-                cell_index += x;
+
+                // println!("{:?} = ({:?} + {:?}) % {:?}", cell_coord, self.pos, tile_coord, self.size);
+
+                // ND coord to 1D index
+                let mut cell_index = 0;
+                for i in 0..N {
+                    let mut x = cell_coord[i];
+                    for j in 0..i {
+                        x *= self.size[j];
+                    }
+                    // println!("{}", x);
+                    cell_index += x;
+                }
+
+                // println!("{:?} -> {}", cell_coord, cell_index);
+
+                if row.contains(&cell_index) {
+                    // Tile intersects itself, so this row would not be valid
+                    is_valid = false;
+                    break;
+                }
+
+                row.push(cell_index);
             }
 
-            row.push(cell_index);
-        }
+            // === INCREMENT
+            for i in 0..=N {
+                if i == N {
+                    self.t += 1;
+                    break;
+                }
 
-        // === INCREMENT
-        for i in 0..=N {
-            if i == N {
-                self.t += 1;
-                break;
+                self.pos[i] += 1;
+
+                if self.pos[i] != self.size[i] {
+                    break;
+                }
+                self.pos[i] = 0;
             }
 
-            self.pos[i] += 1;
-
-            if self.pos[i] != self.size[i] {
-                break;
+            if is_valid {
+                return Some(row);
             }
-            self.pos[i] = 0;
-        }
-
-        return Some(row);
+        };
     }
 }
 

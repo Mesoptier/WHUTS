@@ -48,7 +48,7 @@ impl Tile<3> {
     }
 }
 
-fn normalize_negative_coords<const N: usize>(coords: Vec<[i8; N]>) -> Vec<Coord<N>> {
+pub fn normalize_negative_coords<const N: usize>(coords: Vec<[i8; N]>) -> Vec<Coord<N>> {
     let mut lowest = [i8::MAX; N];
     for &coord in &coords {
         for i in 0..N {
