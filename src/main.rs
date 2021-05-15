@@ -2,23 +2,24 @@ use crate::tile::{Tile, Coord, normalize_negative_coords};
 
 mod tile;
 mod rotation_matrices;
+mod data;
 
 const N: usize = 3;
 const MAX_SPACE_SIZE: usize = 5;
 
 fn main() {
-    let coords = vec![[0, 0, 0], [0, 0, -1], [0, -1, -1], [0, -1, -2], [-1, -1, -2], [1, 0, 0], [1, 0, 1], [1, 1, 1]];
+    for &coords in &data::TILES {
+        let tile: Tile<N> = Tile::new(normalize_negative_coords(Vec::from(coords)));
 
-    let tile: Tile<N> = Tile::new(normalize_negative_coords(coords));
+        println!("{:?}", tile);
 
-    println!("{:?}", tile);
+        // Get and de-dupe rotations
+        let mut rotations = tile.rotations();
+        rotations.sort();
+        rotations.dedup();
 
-    // Get and de-dupe rotations
-    let mut rotations = tile.rotations();
-    rotations.sort();
-    rotations.dedup();
-
-    find_tiling(rotations);
+        find_tiling(rotations);
+    }
 }
 
 fn find_tiling(tiles: Vec<Tile<N>>) -> bool {
