@@ -18,20 +18,25 @@ fn main() {
     rotations.sort();
     rotations.dedup();
 
+    find_tiling(rotations);
+}
+
+fn find_tiling(tiles: Vec<Tile<N>>) -> bool {
     for x in 1..MAX_SPACE_SIZE {
         for y in 1..MAX_SPACE_SIZE {
             for z in 1..MAX_SPACE_SIZE {
                 let space_size = [x, y, z];
-                if find_tiling(rotations.clone(), space_size) {
+                if find_tiling_in_space(tiles.clone(), space_size) {
                     println!("Wrapped space size: {:?}", space_size);
-                    return;
+                    return true;
                 }
             }
         }
     }
+    return false;
 }
 
-fn find_tiling(tiles: Vec<Tile<N>>, space_size: Coord<N>) -> bool {
+fn find_tiling_in_space(tiles: Vec<Tile<N>>, space_size: Coord<N>) -> bool {
     let num_cells = space_size.iter().product::<usize>();
     if num_cells % tiles.first().unwrap().coords.len() != 0 {
         return false;
