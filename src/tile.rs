@@ -1,9 +1,9 @@
-use crate::rotation_matrices::ROTATION_MATRICES_2D;
+use crate::rotation_matrices::{ROTATION_MATRICES_2D, ROTATION_MATRICES_3D};
 
 pub type Coord<const N: usize> = [usize; N];
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Ord, PartialOrd, Eq, PartialEq)]
 pub struct Tile<const N: usize> {
     pub coords: Vec<Coord<N>>,
 }
@@ -39,6 +39,12 @@ impl<const N: usize> Tile<N> {
 impl Tile<2> {
     pub fn rotations(&self) -> Vec<Tile<2>> {
         self.rotations_internal(&ROTATION_MATRICES_2D)
+    }
+}
+
+impl Tile<3> {
+    pub fn rotations(&self) -> Vec<Tile<3>> {
+        self.rotations_internal(&ROTATION_MATRICES_3D)
     }
 }
 

@@ -4,11 +4,27 @@ mod tile;
 mod rotation_matrices;
 
 fn main() {
-    let tile: Tile<2> = Tile::new(vec![[0, 0], [0, 1], [1, 0]]);
+    let tile: Tile<3> = Tile::new(vec![
+        [0, 0, 0],
+        [0, 1, 0],
+        [1, 0, 0],
+        [0, 0, 1],
+    ]);
 
-    let space_size = [3, 3];
+    let space_size = [3, 4, 4];
 
-    let mat = WhutsMatrix::new(space_size, tile.rotations());
+    let num_cells = space_size.iter().product::<usize>();
+    if num_cells % tile.coords.len() != 0 {
+        eprintln!("No solution possible!");
+        return
+    }
+
+    // Get and de-dupe rotations
+    let mut rotations = tile.rotations();
+    rotations.sort();
+    rotations.dedup();
+
+    let mat = WhutsMatrix::new(space_size, rotations);
     let mut solver = dlx::Solver::new(mat.ncols(), mat);
     let mut solutions = Solutions { solved: false };
     solver.solve(vec![], &mut solutions);
