@@ -17,8 +17,9 @@ fn main() {
     for (index, &coords) in data::TILES.iter().enumerate() {
         let tile: Tile<N> = Tile::new(normalize_negative_coords(Vec::from(coords)));
 
-        println!("Unfolding #{}:", index + 1);
-        println!("{:?}", tile.coords);
+        println!("{:=^88}", format!("[ UNFOLDING #{} ]", index + 1));
+        println!("Unfolding coords:\n{:?}", tile.coords);
+        println!();
 
         // Get and de-dupe rotations
         let mut rotations = tile.rotations();
@@ -28,10 +29,11 @@ fn main() {
         match find_tiling(rotations) {
             Some((tiling, space_size)) => {
                 println!("FOUND TILING!");
+                println!("Dimensions of the wrapped space (i.e. hypertorus): {:?}", space_size);
+                println!("Tiling (each line is a single instance of the unfolding):");
                 for tile in tiling {
                     println!("{:?}", tile);
                 }
-                println!("space size: {:?}", space_size);
             }
             None => {
                 println!("NO TILING FOUND!")
@@ -176,8 +178,11 @@ impl dlx::Solutions for WhutsSolutions {
             for index in row {
                 tile.push(index_to_coord(index, self.space_size));
             }
+            tile.sort();
             self.tiling.push(tile);
         }
+
+        self.tiling.sort();
 
         // Stop after finding one solution
         false
