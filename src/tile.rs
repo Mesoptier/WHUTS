@@ -15,27 +15,30 @@ impl<const N: usize> Tile<N> {
 
         Tile { coords }
     }
-}
 
-impl Tile<2> {
-    pub fn rotations(&self) -> Vec<Tile<2>> {
-        ROTATION_MATRICES_2D.iter()
+    fn rotations_internal(&self, matrices: &[[[i8; N]; N]]) -> Vec<Tile<N>> {
+        matrices.iter()
             .map(|mat| {
                 let mut new_coords = vec![];
 
                 for &coord in &self.coords {
-                    let mut new_coord = [0; 2];
-                    for i in 0..2 {
-                        for j in 0..2 {
+                    let mut new_coord = [0; N];
+                    for i in 0..N {
+                        for j in 0..N {
                             new_coord[i] += coord[j] as i8 * mat[i][j];
                         }
                     }
                     new_coords.push(new_coord);
                 }
-
                 return Tile::new(normalize_negative_coords(new_coords));
             })
             .collect()
+    }
+}
+
+impl Tile<2> {
+    pub fn rotations(&self) -> Vec<Tile<2>> {
+        self.rotations_internal(&ROTATION_MATRICES_2D)
     }
 }
 
